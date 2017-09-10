@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block body %}
+    {% block section %}
+        <!-- container section start -->
+        <section id="container" class="">
+          <!--main content start-->
+          <section id="main-content">
+              <section class="wrapper">
+              <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header"><i class="fa fa-files-o"></i>Add Resolution</h3>
+                        <ol class="breadcrumb">
+                            <li><i class="fa fa-home"></i><a href="index.html">Home</a></li>
+                            <li><i class="fa fa-table"></i>Resolution</li>
+                            <li><i class="fa fa-file-text-o"></i>Add Resolution</li>
+                        </ol>
+                    </div>
+                </div>
+                  <!-- Form validations -->
+                  <div class="row">
+                      <div class="col-lg-12">
+                          <section class="panel">
+                              {% with messages = get_flashed_messages(with_categories=true) %}
+                                  {%  if messages %}
+                                      {% for category, message in messages %}
+                                      <div class="alert alert-{{ category }} fade in">
+                                          <button data-dismiss="alert" class="close close-sm" type="button">
+                                              <i class="icon-remove"></i>
+                                          </button>
+                                          {{ message }}
+                                      </div>
+                                      {% endfor %}
+                                  {%  else %}
+                                      <div class="alert alert-info fade in">
+                                          <button data-dismiss="alert" class="close close-sm" type="button">
+                                              <i class="icon-remove"></i>
+                                          </button>
+                                          <strong>Note:</strong> Please fill all fields that contains asterisk (*).
+                                      </div>
+                                  {% endif %}
+                              {% endwith %}
+                              <div class="panel-body">
+                                  <div class="form">
+                                      <form class="form-validate form-horizontal" method="post" action="/addresolution" enctype=multipart/form-data>
+                                          <div class="form-group ">
+                                              <label for="resolution_num" class="control-label col-lg-2">Resolution Number <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" onkeypress="return isNumber(event)" id="resolution_num" name="resolution_num" minlength="1" type="text" value="{%  if ret_val %}{{ ret_val['resolution_num'] }}{% endif %}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="series" class="control-label col-lg-2">Series Of <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" onkeypress="return isNumber(event)" id="series" name="series" minlength="4" type="text" value="{%  if ret_val %}{{ ret_val['series'] }}{% endif %}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="description" class="control-label col-lg-2">Description <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <textarea class="form-control" name="description" rows="6">{%  if ret_val %}{{ ret_val['description'] }}{% endif %}</textarea>
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="author1" class="control-label col-lg-2">Authors <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="author1" type="text" name="author1" value="{%  if ret_val %}{{ ret_val['author1'] }}{% endif %}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="author2" class="control-label col-lg-2"> </label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="author2" type="text" name="author2" value="{%  if ret_val %}{{ ret_val['author2'] }}{% endif %}"  />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="author3" class="control-label col-lg-2"> </label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="author3" type="text" name="author3" value="{%  if ret_val %}{{ ret_val['author3'] }}{% endif %}"  />
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label for="resolved_date" class="control-label col-lg-2">Resolved Date <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input id="resolved_date" onkeypress="return isNumber(event)" type="date" name="resolved_date" value="{%  if ret_val %}{{ ret_val['resolved_date'] }}{% endif %}" size="6" class="form-control" required>
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="cert_by" class="control-label col-lg-2">Certified By <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" id="cert_by" name="cert_by" minlength="5" type="text" value="{%  if ret_val %}{{ ret_val['cert_by'] }}{% endif %}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="att_by" class="control-label col-lg-2">Attested By <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" id="att_by" name="att_by" minlength="5" type="text" value="{%  if ret_val %}{{ ret_val['att_by'] }}{% endif %}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label for="upfile" class="control-label col-lg-2">Upload File <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input type="file" id="upfile" name="upfile" required>
+                                                  <p class="help-block">Uploadable files are .pdf, .doc, .docx, .png and .jpeg.</p>
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <div class="col-lg-offset-2 col-lg-10">
+                                                  <button class="btn btn-primary" type="submit">Add</button>
+                                                  <button class="btn btn-default" type="reset">Reset</button>
+                                              </div>
+                                          </div>
+                                      </form>
+                                  </div>
+
+                              </div>
+                          </section>
+                      </div>
+                  </div>
+                  <!-- page end-->
+              </section>
+          </section>
+          <!--main content end-->
+        </section>
+        <!-- container section end -->
+
+        <!-- javascripts -->
+        <script src="../static/js/jquery.js"></script>
+        <script src="../static/js/bootstrap.min.js"></script>
+        <!-- nice scroll -->
+        <script src="../static/js/jquery.scrollTo.min.js"></script>
+        <script src="../static/js/jquery.nicescroll.js" type="text/javascript"></script>
+        <!-- jquery validate js -->
+        <script type="text/javascript" src="../static/js/jquery.validate.min.js"></script>
+
+        <!-- custom form validation script for this page-->
+        <script src="../static/js/form-validation-script.js"></script>
+        <!--custome script for all page-->
+        <script src="../static/js/scripts.js"></script>
+    {% endblock %}
+{% endblock %}

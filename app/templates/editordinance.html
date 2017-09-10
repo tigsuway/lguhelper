@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block body %}
+    {% block section %}
+        <!-- container section start -->
+        <section id="container" class="">
+          <!--main content start-->
+          <section id="main-content">
+              <section class="wrapper">
+              <div class="row">
+                    <div class="col-lg-12">
+                        <h3 class="page-header"><i class="fa fa-files-o"></i>Add Ordinance</h3>
+                        <ol class="breadcrumb">
+                            <li><i class="fa fa-home"></i><a href="index.html">Home</a></li>
+                            <li><i class="fa fa-table"></i>Ordinances</li>
+                            <li><i class="fa fa-table"></i>View Ordinance</li>
+                            <li><i class="fa fa-file-text-o"></i>Edit Ordinance</li>
+                        </ol>
+                    </div>
+                </div>
+                  <!-- Form validations -->
+                  <div class="row">
+                      <div class="col-lg-12">
+                          <section class="panel">
+                              {% if status == 'success'%}
+                                  <div class="alert alert-success fade in">
+                                      <button data-dismiss="alert" class="close close-sm" type="button">
+                                          <i class="icon-remove"></i>
+                                      </button>
+                                      <strong>Well done!</strong> {{ message }}.
+                                  </div>
+                              {% elif status == 'fail' %}
+                                  <div class="alert alert-block alert-danger fade in">
+                                      <button data-dismiss="alert" class="close close-sm" type="button">
+                                          <i class="icon-remove"></i>
+                                      </button>
+                                      <strong>Oh snap!</strong> {{ message }}
+                                  </div>
+                              {% else %}
+                                  <div class="alert alert-info fade in">
+                                      <button data-dismiss="alert" class="close close-sm" type="button">
+                                          <i class="icon-remove"></i>
+                                      </button>
+                                      <strong>Note:</strong> Please fill all fields that contains asterisk (*).
+                                  </div>
+                              {%  endif %}
+                              <div class="panel-body">
+                                  <div class="form">
+                                      <form class="form-validate form-horizontal" method="post" action="/editordinance/{{ ordinance['ordinance_id'] }}" enctype=multipart/form-data>
+                                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                          <div class="form-group ">
+                                              <label for="ordinance_num" class="control-label col-lg-2">Ordinance Number <span class="required"></span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" onkeypress="return isNumber(event)" id="ordinance_num" name="ordinance_num" minlength="1" type="text" value="{{ ordinance['ordinance_num'] }}" readonly />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="series" class="control-label col-lg-2">Series Of <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" onkeypress="return isNumber(event)" id="series" name="series" minlength="4" type="text" value="{{ ordinance['series'] }}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="description" class="control-label col-lg-2">Description <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <textarea class="form-control" name="description" rows="6">{{ ordinance['description'] }}</textarea>
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="sponsor1" class="control-label col-lg-2">Sponsors <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="sponsor1" type="text" name="sponsor1" value="{{ ordinance['sponsor1'] }}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="sponsor2" class="control-label col-lg-2"> </label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="sponsor2" type="text" name="sponsor2" value="{{ ordinance['sponsor2'] }}"  />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="sponsor3" class="control-label col-lg-2"> </label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control " id="sponsor3" type="text" name="sponsor3" value="{{ ordinance['sponsor3'] }}"  />
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label for="ordained_date" class="control-label col-lg-2">Ordained Date <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input id="ordained_date" onkeypress="return isNumber(event)" type="date" name="ordained_date" value="{{ ordinance['ordained_date'] }}" size="16" class="form-control" required>
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="aff_by" class="control-label col-lg-2">Affirmed By <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" id="aff_by" name="aff_by" minlength="5" type="text" value="{{ ordinance['aff_by'] }}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="att_by" class="control-label col-lg-2">Attested By <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" id="att_by" name="att_by" minlength="5" type="text" value="{{ ordinance['att_by'] }}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group ">
+                                              <label for="app_by" class="control-label col-lg-2">Approved By <span class="required">*</span></label>
+                                              <div class="col-lg-10">
+                                                  <input class="form-control" id="app_by" name="app_by" minlength="5" type="text" value="{{ ordinance['app_by'] }}" required />
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <label for="upfile" class="control-label col-lg-2">Upload File</label>
+                                              <div class="col-lg-10">
+                                                  <input type="file" id="upfile" name="upfile">
+                                                  <p class="help-block">Uploadable files are .pdf, .doc, .docx, .png, .jpg, and .jpeg.</p>
+                                              </div>
+                                          </div>
+                                          <div class="form-group">
+                                              <div class="col-lg-offset-2 col-lg-10">
+                                                  <button class="btn btn-primary" type="submit">Update</button>
+                                              </div>
+                                          </div>
+                                      </form>
+                                  </div>
+
+                              </div>
+                          </section>
+                      </div>
+                  </div>
+                  <!-- page end-->
+              </section>
+          </section>
+          <!--main content end-->
+        </section>
+        <!-- container section end -->
+
+        <!-- javascripts -->
+        <script src="../static/js/jquery.js"></script>
+        <script src="../static/js/bootstrap.min.js"></script>
+        <!-- nice scroll -->
+        <script src="../static/js/jquery.scrollTo.min.js"></script>
+        <script src="../static/js/jquery.nicescroll.js" type="text/javascript"></script>
+        <!-- jquery validate js -->
+        <script type="text/javascript" src="../static/js/jquery.validate.min.js"></script>
+
+        <!-- custom form validation script for this page-->
+        <script src="../static/js/form-validation-script.js"></script>
+        <!--custome script for all page-->
+        <script src="../static/js/scripts.js"></script>
+    {% endblock %}
+{% endblock %}
