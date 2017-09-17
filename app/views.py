@@ -13,30 +13,8 @@ from app.models import Resolution
 from app.models import Other
 from app import app
 from app import db
-from datetime import timedelta
 import os
 import uuid
-
-
-@app.before_request
-# def csrf_protect():
-#     if request.method == "POST":
-#         token = session.pop('_csrf_token', None)
-#         if not token or token != request.form.get('_csrf_token'):
-#             app.errorhandler(403)
-#
-#
-# def generate_csrf_token():
-#     if '_csrf_token' not in session:
-#         session['_csrf_token'] = generate_random_string()
-#     return session['_csrf_token']
-#
-# app.jinja_env.globals['csrf_token'] = generate_csrf_token
-
-def make_session_permanent():
-    session.permanent = True
-    app.permanent_session_lifetime = timedelta(minutes=1)
-
 
 
 def generate_random_string():
@@ -50,8 +28,6 @@ def allowed_file(filename, extensions):
 @app.route('/login.html', methods=['POST', 'GET'])
 @app.route('/login', methods=['POST', 'GET'])
 def login():
-    status = ''
-    message = ''
     if request.method == 'POST':
         try:
             username = str(request.form['username'])
@@ -59,59 +35,48 @@ def login():
             user = UserInfo.query.filter_by(username=username).first()
             if username == user.username and UserInfo.verify_password(user, password):
                 session['userid'] = user.userid
-                session['username'] = user.username
-                session['firstname'] = user.firstname
-                session['middlename'] = user.middlename
-                session['lastname'] = user.lastname
-                session['roleid'] = user.role_id
-                session['birthdate'] = user.birthdate
-                session['address'] = user.address
-                session['email'] = user.email
-                session['contact_number'] = user.contact_number
-                status = 'success'
-                message = 'Authentication success!'
+                session['username'] = str(user.username)
                 return redirect(url_for('index'))
             else:
-                status = 'fail'
-                message = 'Invalid username or password!'
+                flash('Invalid username or password!', 'danger')
+                return redirect(url_for('login'))
         except AttributeError:
-            status = 'fail'
-            message = 'Invalid username or password!'
-    return render_template('login.html', title='Login', status=status, message=message)
+            flash(session['username'], 'info')
+            flash('Invalid username or password!', 'danger')
+    return render_template('login.html', title='Login')
 
 
 @app.route('/logout')
 def logout():
-    message = ''
-    status = ''
-    if session:
+    if 'username' in session:
         session.clear()
-        message = 'Logout successful!'
-        status = 'logout'
+        flash("You have successfully logged out.", 'success')
     else:
-        return redirect(url_for('login'))
-    return render_template('login.html', title='Login', message=message, status=status)
+        flash("You have not logged-in.", 'info')
+    return redirect(url_for('login'))
 
 
-@app.route('/')
-@app.route('/index')
-@app.route('/index.html')
+@app.route('/', methods=['POST', 'GET'])
+@app.route('/index', methods=['POST', 'GET'])
+@app.route('/index.html', methods=['POST', 'GET'])
 def index():
-    status = ''
-    if session:
-        return render_template('index.html', title='Home')
+    if request.method == 'POST':
+        if 'username' in session:
+            return render_template('index.html', title='Home')
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        if 'username' in session:
+            return render_template('index.html', title='Home')
+        else:
+            return redirect(url_for('login'))
+    flash('Unauthorize access!', 'info')
+    return redirect(url_for('login'))
 
 
 @app.route('/adduser', methods=['POST', 'GET'])
 def adduser():
-    status = ''
-    message = ''
     form = []
 
-    if session:
+    if 'username' in session:
         if request.method == 'POST' and request.form['password'] == request.form['cpassword']:
             user_info = UserInfo(request.form['firstname'], request.form['lastname'], request.form['middlename'],
                                  request.form['birthdate'], request.form['address'], request.form['cemail'],
@@ -132,15 +97,15 @@ def adduser():
             message = 'Please fill all fields with asterisk (*).'
             status = 'none'
 
-        return render_template('adduser.html', title='Add User', status=status, message=message, form=form)
+        return render_template('adduser.html', title='Add User', form=form)
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        flash('Unauthorize access!', 'info')
+        return redirect(url_for('login'))
 
 
 @app.route('/viewuser', methods=['POST', 'GET'])
 def viewuser():
-    if session:
+    if 'username' in session:
         x = 0
         users_info = {}
         users = UserInfo.query.all()
@@ -153,13 +118,13 @@ def viewuser():
 
         return render_template('viewuser.html', title="View User", users_info=users_info)
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        flash('Unauthorize access!', 'info')
+        return redirect(url_for('login'))
 
 
 @app.route('/viewordinance', methods=['POST', 'GET'])
 def viewordinance():
-    if session:
+    if 'username' in session:
         x = 0
         ord_query = Ordinance.query.order_by(Ordinance.ordinance_num.asc()).all()
         ordinances = {}
@@ -181,12 +146,13 @@ def viewordinance():
 
         return render_template('viewordinance.html', title="View Ordinance", ordinances=ordinances)
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        flash('Unauthorize access!', 'info')
+        return redirect(url_for('login'))
+
 
 @app.route('/viewresolution', methods=['POST', 'GET'])
 def viewresolution():
-    if session:
+    if 'username' in session:
         x = 0
         res_query = Resolution.query.order_by(Resolution.resolution_num.asc()).all()
         resolution = {}
@@ -208,12 +174,13 @@ def viewresolution():
 
         return render_template('viewresolution.html', title="View Resolution", resolution=resolution)
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        flash('Unauthorize access!', 'info')
+        return redirect(url_for('login'))
+
 
 @app.route('/viewother', methods=['POST', 'GET'])
 def viewother():
-    if session:
+    if 'username' in session:
         x = 0
         oth_query = Other.query.order_by(Other.other_id.asc()).all()
         other = {}
@@ -229,13 +196,13 @@ def viewother():
 
         return render_template('viewother.html', title="View Other Documents", other=other)
     else:
-        status = 'unauthorize'
-        return render_template('login.html', title='Login', status=status)
+        flash('Unauthorize access!', 'info')
+        return redirect(url_for('login'))
 
 
 @app.route('/edituser/<username>', methods=['POST', 'GET'])
 def edituser(username):
-    if session:
+    if 'username' in session:
         user_info = UserInfo.query.filter_by(username=username).first()
 
         if request.method == 'POST':
@@ -254,13 +221,13 @@ def edituser(username):
 
         return render_template('edituser.html', title="Edit User", user_info=user_info)
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/editordinance/<ordinance_id>', methods=['POST', 'GET'])
 def editordinance(ordinance_id):
-    if session:
+    if 'username' in session:
         ordinance = Ordinance.query.filter_by(ordinance_id=ordinance_id).first()
 
         if request.method == 'POST':
@@ -312,13 +279,13 @@ def editordinance(ordinance_id):
         return render_template('editordinance.html', title="Edit Ordinance", ordinance=ordinance)
 
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/editresolution/<resolution_id>', methods=['POST', 'GET'])
 def editresolution(resolution_id):
-    if session:
+    if 'username' in session:
         resolution = Resolution.query.filter_by(resolution_id=resolution_id).first()
 
         if request.method == 'POST':
@@ -372,13 +339,13 @@ def editresolution(resolution_id):
         return render_template('editresolution.html', title="Edit Resolution", resolution=resolution)
 
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/editother/<other_id>', methods=['POST', 'GET'])
 def editother(other_id):
-    if session:
+    if 'username' in session:
         other = Other.query.filter_by(other_id=other_id).first()
 
         if request.method == 'POST':
@@ -420,15 +387,13 @@ def editother(other_id):
         return render_template('editother.html', title="Edit Other Document", other=other)
 
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
-
-
 
 
 @app.route('/deleteuser/<username>')
 def deleteuser(username):
-    if session:
+    if 'username' in session:
         user = UserInfo.query.filter_by(username=username).first()
         del_user = user.username
         UserInfo.query.filter_by(username=username).delete()
@@ -436,13 +401,13 @@ def deleteuser(username):
         flash(del_user + ' user was successfully deleted...', 'info')
         return redirect(url_for('viewuser'))
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/deleteordinance/<ordinance_id>')
 def deleteordinance(ordinance_id):
-    if session:
+    if 'username' in session:
         ordinance = Ordinance.query.filter_by(ordinance_id=ordinance_id).first()
         del_ordinance = ordinance.ordinance_num
         if ordinance.filename:
@@ -452,13 +417,13 @@ def deleteordinance(ordinance_id):
         flash('Ordinance "' + str(del_ordinance) + '" was successfully deleted...', 'success')
         return redirect(url_for('viewordinance'))
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/deleteresolution/<resolution_id>')
 def deleteresolution(resolution_id):
-    if session:
+    if 'username' in session:
         resolution = Resolution.query.filter_by(resolution_id=resolution_id).first()
         del_resolution = resolution.resolution_num
         if resolution.filename:
@@ -468,13 +433,13 @@ def deleteresolution(resolution_id):
         flash('Resolution "' + str(del_resolution) + '" was successfully deleted...', 'success')
         return redirect(url_for('viewresolution'))
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/deleteother/<other_id>')
 def deleterother(other_id):
-    if session:
+    if 'username' in session:
         other = Other.query.filter_by(other_id=other_id).first()
         del_other = other.other_id
         if other.filename:
@@ -484,12 +449,12 @@ def deleterother(other_id):
         flash('Other Document "' + str(del_other) + '" was successfully deleted...', 'success')
         return redirect(url_for('viewother'))
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 @app.route('/addordinance', methods=['POST', 'GET'])
 def addordinance():
-    if session:
+    if 'username' in session:
         if request.method == 'POST':
             my_file = request.files['upfile']
             filename = ''
@@ -527,13 +492,13 @@ def addordinance():
 
         return render_template('addordinance.html', title='Add Ordinance')
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/addresolution', methods=['POST', 'GET'])
 def addresolution():
-    if session:
+    if 'username' in session:
         if request.method == 'POST':
             my_file = request.files['upfile']
             filename = ''
@@ -579,13 +544,13 @@ def addresolution():
 
         return render_template('addresolution.html', title='Add Resolution')
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
 @app.route('/addother', methods=['POST', 'GET'])
 def addother():
-    if session:
+    if 'username' in session:
         if request.method == 'POST':
             my_file = request.files['upfile']
             filename = ''
@@ -619,35 +584,35 @@ def addother():
 
         return render_template('addother.html', title='Add Other Documents')
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
-@app.route('/download/ordinance/<filename>', methods=['GET', 'POST'])
+@app.route('/download/ordinance/<filename>', methods=['GET'])
 def downloadordinance(filename):
-    if session:
+    if 'username' in session:
         filepath = os.path.join(app.config['BASEDIR'], app.config['UPLOAD_FOLDER_ORDINANCES'])
         return send_from_directory(directory=filepath, filename=filename)
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
-@app.route('/download/resolution/<filename>', methods=['GET', 'POST'])
+@app.route('/download/resolution/<filename>', methods=['GET'])
 def downloadresolution(filename):
-    if session:
+    if 'username' in session:
         filepath = os.path.join(app.config['BASEDIR'], app.config['UPLOAD_FOLDER_RESOLUTIONS'])
         return send_from_directory(directory=filepath, filename=filename)
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))
 
 
-@app.route('/download/other/<filename>', methods=['GET', 'POST'])
+@app.route('/download/other/<filename>', methods=['GET'])
 def downloadother(filename):
-    if session:
+    if 'username' in session:
         filepath = os.path.join(app.config['BASEDIR'], app.config['UPLOAD_FOLDER_OTHERS'])
         return send_from_directory(directory=filepath, filename=filename)
     else:
-        flash('Unauthorize access!', 'unauthorize')
+        flash('Unauthorize access!', 'info')
         return redirect(url_for('login'))

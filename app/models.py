@@ -14,7 +14,7 @@ class UserInfo(db.Model):
     password_hash = db.Column(db.String(256), index=True)
     address = db.Column('address',db.String(100))
     email = db.Column('email',db.String(50), unique=True)
-    contact_number = db.Column('contact_number', db.String(15))
+    contact_number = db.Column('contact_number', db.String(30))
     role_id = db.Column(db.Integer, db.ForeignKey('Role.roleid'))
 
     @property
